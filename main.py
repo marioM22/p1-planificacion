@@ -1,43 +1,51 @@
-def requerimientos_a_matriz():
-    pass
 
+from dataclasses import dataclass
+from typing import List
 
-def tareas_a_matriz(ruta_archivo):
-    matriz = []
-    with open(ruta_archivo, 'r') as archivo:
-        for linea in archivo:
-            datos = linea.strip().split(',')
-            
-            if len(datos) == 3:
-                fila = [datos[0], int(datos[1]), datos[2]]
-                matriz.append(fila)
-                
-    return matriz
+@dataclass
+class Tarea:
+    id_tarea: str
+    duracion: int
+    categoria: str
 
-def recursos_a_matriz(ruta_archivo):
-    matriz = []
-    with open(ruta_archivo, 'r') as archivo:
-        for linea in archivo:
-            datos = linea.strip().split(',')
-            
-            if len(datos) == 2:
-                fila = [datos[0], datos[1]]
-                matriz.append(fila)
-                
-    return matriz
+@dataclass
+class Recurso:
+    id_recurso: str
+    categorias_soportadas: List[str]
 
-def compatibilidad(tarea, recurso):
-    cat_tarea = tarea[2]
-    cat_recurso = recurso[1]
-    return cat_tarea in cat_recurso
+def leer_tareas(ruta: str = "tareas.txt") -> List[Tarea]:
+    tareas = []
+    with open(ruta, "r") as f:
+        for linea in f:
+            partes = linea.strip().split(",")
+            if len(partes) >= 3:
+                tareas.append(Tarea(partes[0], int(partes[1]), partes[2]))
+    return tareas
 
-matrizT = tareas_a_matriz("tareas.txt")
-print(matrizT)
+def leer_recursos(ruta: str = "recursos.txt") -> List[Recurso]:
+    recursos = []
+    with open(ruta, "r") as f:
+        for linea in f:
+            partes = [p.strip() for p in linea.strip().split(",")]
+            if len(partes) >= 2:
+                id_rec = partes[0]
+                cats = partes[1:]
+                recursos.append(Recurso(id_rec, cats))
+    return recursos
 
-matrizR = recursos_a_matriz("recursos.txt")
-print(matrizR)
+def es_compatible(t: Tarea, r: Recurso):
+    return t.categoria in r.categorias_soportadas
 
-for i in range(len(matrizT)):
-    for j in range(len(matrizR)):
-        if compatibilidad(matrizT[i], matrizR[j]):
-            print(f"El Recurso {matrizR[j][0]} puede hacer la Tarea {matrizT[i][0]}")
+mis_tareas = leer_tareas("tareas_2.txt")
+mis_recursos = leer_recursos("recursos_2.txt")
+
+for t in mis_tareas:
+    print(f"ID: {t.id_tarea} | Duración: {t.duracion} | Cat: {t.categoria}")
+
+for r in mis_recursos:
+    print(f"ID: {r.id_recurso} | Categorías soportadas: {r.categorias_soportadas}")
+
+for t in mis_tareas:
+    for r in mis_recursos:
+        if es_compatible(t, r):
+            print(f"{r.id_recurso} puede hacer {t.id_tarea}")
